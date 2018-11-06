@@ -102,20 +102,28 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		CBitmap *pOldbmp;
 		BITMAP  bi;
 
-		bmp.Attach(image->Detach());   //udaje nasho image obrazku 
-		bmDC.CreateCompatibleDC(pDC);  //udaje z pdc su skopirovane do bmDC
+		//udaje nasho image obrazku 
+		bmp.Attach(image->Detach());  
+		//udaje z pdc su skopirovane do bmDC
+		bmDC.CreateCompatibleDC(pDC);  
 
-		CRect r(lpDI->rcItem); //rozmery "niecoho"
+		CRect r(lpDI->rcItem);
 
 		//bmDC je kopia pDC, pDC je to s cim pracujeme
-		pOldbmp = bmDC.SelectObject(&bmp); //smernik ukazuje na bmDC
-		bmp.GetBitmap(&bi);  //vlastnosti BITMAP do bmp
-		pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);  //hlavne ulozenie &bmDC - adresa kontext.menu
-		bmDC.SelectObject(pOldbmp); //?
+		//smernik ukazuje na bmDC
+		pOldbmp = bmDC.SelectObject(&bmp); 
+		//vlastnosti BITMAP do bmp
+		bmp.GetBitmap(&bi);  
+		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight,SRCCOPY); 
+		bmDC.SelectObject(pOldbmp); 
+		image->Attach((HBITMAP)bmp.Detach()); 
+		//skalovanie
+
 		return S_OK;
 	}
 	return S_OK;
 }
+
 
 void CApplicationDlg::OnClose()
 {
@@ -180,6 +188,17 @@ void CApplicationDlg::OnSysCommand(UINT nID, LPARAM lParam)
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
+
+
+void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
+{
+	Invalidate();
+	__super::OnSize(nType,cx,cy);
+	if (m_ctrlImage) m_ctrlImage.MoveWindow(CRect(0,0,cx,cy));
+
+}
+
+
 
 void CApplicationDlg::OnPaint()
 {
