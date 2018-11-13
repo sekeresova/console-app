@@ -88,6 +88,27 @@ void CApplicationDlg::OnDestroy()
 	Default();
 }
 
+float CApplicationDlg::ScaleImage(CRect r, BITMAP bi)
+{
+	float fact = 1.0;
+
+	if ((bi.bmHeight > r.Height()) && (bi.bmWidth <= r.Width()))
+		fact = (float)bi.bmHeight / (float)r.Height();
+
+	if ((bi.bmWidth > r.Width()) && (bi.bmHeight <= r.Height()))
+		fact = (float)bi.bmWidth / (float)r.Width();
+
+	if (((bi.bmWidth < r.Width()) && (bi.bmHeight < r.Height())) ||
+		((bi.bmWidth > r.Width()) && (bi.bmHeight > r.Height()))) {
+		
+		if (r.Height() > r.Width())
+			fact = (float)bi.bmWidth / (float)r.Width();
+		else fact = (float)bi.bmHeight / (float)r.Height();
+	}
+
+	return fact;
+}
+
 LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 {
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
@@ -113,12 +134,25 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		//smernik ukazuje na bmDC
 		pOldbmp = bmDC.SelectObject(&bmp); 
 		//vlastnosti BITMAP do bmp
-		bmp.GetBitmap(&bi);  
+		bmp.GetBitmap(&bi); 
+
+		//skalovanie
+		//obraz nie je pekne zaostreny, ale farby zlozitejsich obrazkov su uz pekne
+		int src_width = bi.bmWidth;
+		int src_height = bi.bmHeight;
+
+		float fact = ScaleImage(r, bi);
+
+		float fact_width = (float)r.Width() / (float)bi.bmWidth;
+		float fact_height = (float)r.Height() / (float)bi.bmHeight;
+
+		src_width *= fact_width * fact;
+		src_height *= fact_height * fact;
+		pDC->SetStretchBltMode(HALFTONE);
+
 		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight,SRCCOPY); 
 		bmDC.SelectObject(pOldbmp); 
 		image->Attach((HBITMAP)bmp.Detach()); 
-		//skalovanie
-
 		return S_OK;
 	}
 	return S_OK;
@@ -197,7 +231,6 @@ void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
 	if (m_ctrlImage) m_ctrlImage.MoveWindow(CRect(0,0,cx,cy));
 
 }
-
 
 
 void CApplicationDlg::OnPaint()

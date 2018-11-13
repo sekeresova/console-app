@@ -61,6 +61,7 @@ public:
 	afx_msg LRESULT OnDrawImage(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg float ScaleImage(CRect r, BITMAP bi);
 protected:
 	CStaticImage m_ctrlImage;
 	CPoint m_ptImage;
