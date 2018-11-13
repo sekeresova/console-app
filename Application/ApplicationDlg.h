@@ -13,6 +13,14 @@ public:
 	void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
 };
 
+class CStaticHistogram : public CStatic
+{
+public:
+	// Overridables (for owner draw only)
+	void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
+};
+
+
 // CApplicationDlg dialog
 class CApplicationDlg : public CDialogEx
 {
@@ -64,5 +72,6 @@ public:
 	afx_msg float ScaleImage(CRect r, BITMAP bi);
 protected:
 	CStaticImage m_ctrlImage;
+	CStaticHistogram m_ctrlHistogram;
 	CPoint m_ptImage;
 };
