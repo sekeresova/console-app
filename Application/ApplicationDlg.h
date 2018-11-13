@@ -67,6 +67,7 @@ public:
 	afx_msg void OnUpdateFileClose(CCmdUI *pCmdUI);
 	afx_msg void OnClose();
 	afx_msg LRESULT OnDrawImage(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnDrawHistogram(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg float ScaleImage(CRect r, BITMAP bi);

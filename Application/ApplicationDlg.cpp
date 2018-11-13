@@ -167,6 +167,32 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 }
 
 
+LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
+{
+	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
+	CDC * pDC = CDC::FromHandle(lpDI->hDC);
+	//DRAW BITMAP
+	if (image == nullptr) {
+		
+		CRect rect(lpDI->rcItem);
+		CBrush brush;
+		brush.CreateSolidBrush(RGB(255, 255, 255));
+		pDC->FillRect(&rect, &brush);
+		DeleteObject(brush);
+		CDC bmDC;
+	}
+	else
+	{
+		CRect rect(lpDI->rcItem);
+		CBrush brush;
+		brush.CreateSolidBrush(RGB(0, 0, 151));
+		pDC->FillRect(&rect, &brush);
+		DeleteObject(brush);
+		CDC bmDC;
+	}
+	return S_OK;
+}
+
 void CApplicationDlg::OnClose()
 {
 	EndDialog(0);
