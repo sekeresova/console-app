@@ -75,4 +75,5 @@ protected:
 	CStaticImage m_ctrlImage;
 	CStaticHistogram m_ctrlHistogram;
 	CPoint m_ptImage;
+	CPoint m_ptHistogram;
 };

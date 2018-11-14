@@ -86,7 +86,7 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_WM_SIZING()
 	ON_MESSAGE(WM_DRAW_IMAGE, OnDrawImage)
-	ON_MESSAGE(WM_DRAW_HISTOGRAM, OnDrawImage)
+	ON_MESSAGE(WM_DRAW_HISTOGRAM, OnDrawHistogram)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
@@ -154,8 +154,8 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		float fact_width = (float)r.Width() / (float)bi.bmWidth;
 		float fact_height = (float)r.Height() / (float)bi.bmHeight;
 
-		src_width *= fact_width * fact;
-		src_height *= fact_height * fact;
+		src_width *= (int)(fact_width * fact);
+		src_height *= (int)(fact_height * fact);
 		pDC->SetStretchBltMode(HALFTONE);
 
 		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight,SRCCOPY); 
@@ -238,6 +238,8 @@ BOOL CApplicationDlg::OnInitDialog()
 	m_ptImage.y = rctClient.Height() - rct.Height();
 
 	m_ctrlHistogram.GetWindowRect(&rct);
+	m_ptHistogram.x = rctClient.Width() - rct.Width();
+	m_ptHistogram.y = rctClient.Height() - rct.Height();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -266,8 +268,7 @@ void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
 	__super::OnSize(nType,cx,cy);
 	if (m_ctrlImage) m_ctrlImage.MoveWindow(CRect((cx)*0.2,0,cx,cy));
 
-	if (m_ctrlHistogram)
-		m_ctrlHistogram.MoveWindow(CRect(0, cy*0.5, cx*0.2, cy));
+	if (m_ctrlHistogram) m_ctrlHistogram.MoveWindow(CRect(0, cy*0.5, cx*0.2, cy));
 
 }
 
@@ -360,7 +361,14 @@ void CApplicationDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 
 void CApplicationDlg::OnFileClose()
 {
-	::MessageBox(NULL, __T("Zatvorenie suboru"), __T("Message"), MB_OK);
+	//::MessageBox(NULL, __T("Zatvorenie suboru"), __T("Message"), MB_OK);
+
+	if (image != nullptr)
+	{
+		delete image;
+		image = nullptr;
+	}
+	Invalidate();
 }
 
 
