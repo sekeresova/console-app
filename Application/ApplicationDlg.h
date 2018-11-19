@@ -59,6 +59,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	CImage *image = nullptr;
 	BITMAP bitmap;
+	int m_histogramR[255] = { 0 };
+	int m_histogramG[255] = { 0 };
+	int m_histogramB[255] = { 0 };
 
 public:
 	afx_msg void OnFileOpen();
@@ -71,6 +74,7 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg float ScaleImage(CRect r, BITMAP bi);
+	void vypocet_histogram(int h, int w, CDC *bmDC);
 protected:
 	CStaticImage m_ctrlImage;
 	CStaticHistogram m_ctrlHistogram;
