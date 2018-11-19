@@ -146,28 +146,9 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		bmp.GetBitmap(&bi);
 
 
-		pDC->FillSolidRect(r.left, r.top, r.Width(), r.Height(), RGB(255, 255, 255));
-		double dWtoH = (double)bi.bmWidth / (double)bi.bmHeight;
-		UINT nHeight = r.Height();
-		UINT nWidth = (UINT)(dWtoH * (double)nHeight);
-
-		if (nWidth > (UINT)r.Width()) {
-
-			nWidth = r.Width();
-			nHeight = (UINT)(nWidth / dWtoH);
-			_ASSERTE(nHeight <= (UINT)r.Height());
-		}
-		pDC->SetStretchBltMode(HALFTONE);
-		pDC->StretchBlt(r.left + (r.Width() - nWidth) / 2, r.top + (r.Height() - nHeight) / 2, nWidth, nHeight, &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
-		bmDC.SelectObject(pOldbmp);
-		image->Attach((HBITMAP)bmp.Detach());
-		return S_OK;
-	}
-}
-
 		//skalovanie
 		//obraz nie je pekne zaostreny, ale farby zlozitejsich obrazkov su uz pekne
-	/*	int src_width = bi.bmWidth;
+		int src_width = bi.bmWidth;
 		int src_height = bi.bmHeight;
 
 		float fact = ScaleImage(r, bi);
@@ -185,10 +166,35 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		return S_OK;
 	}
 	return S_OK;
-}*/
+}
 
 
-void CApplicationDlg::vypocet_histogram(int h, int w, CDC *bmDC)
+void CApplicationDlg::Histogram(int h, int w)
+{
+	if (image != nullptr) {
+
+		COLORREF ccolor = 0;
+		int *Red = new int[(h*w)];
+		int *Green = new int[(h*w)];
+		int *Blue = new int[(h*w)];
+
+		for (int i = 0; i < w; i++)
+			for (int j = 0; j < h; j++)
+			{
+				ccolor = image->GetPixel(i, j);
+				Red[(w*j) + i] = (int)GetRValue(ccolor);
+				Green[(w*j) + i] = (int)GetGValue(ccolor);
+				Blue[(w*j) + i] = (int)GetBValue(ccolor);
+			}
+
+		for (int i = 0; i < h*w; i++)
+		{
+			histogramR[Red[i]]++; histogramG[Green[i]]++; histogramB[Blue[i]]++;
+		}
+	}
+}
+
+void CApplicationDlg::Histogram(int h, int w, CDC *bmDC)
 {
 	if (image != nullptr) {
 
@@ -200,9 +206,8 @@ void CApplicationDlg::vypocet_histogram(int h, int w, CDC *bmDC)
 
 		for (int i = 0; i < w; i++)
 			for (int j = 0; j < h; j++)
-			{// Here you get the RGB value
+			{
 				ccolor = image->GetPixel(i, j);
-				// In this way you get one byte for each color
 				bcolor = GetRValue(ccolor);
 				Redcolor[(w*j) + i] = (int)bcolor;
 				bcolor = GetGValue(ccolor);
@@ -214,14 +219,13 @@ void CApplicationDlg::vypocet_histogram(int h, int w, CDC *bmDC)
 
 		for (int i = 0; i < h*w; i++)
 		{
-			m_histogramR[Redcolor[i]]++;
-			m_histogramG[Greencolor[i]]++;
-			m_histogramB[Bluecolor[i]]++;
+			histogramR[Redcolor[i]]++;
+			histogramG[Greencolor[i]]++;
+			histogramB[Bluecolor[i]]++;
 		}
 
 	}
 }
-
 
 LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 {
@@ -244,26 +248,26 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		bmp.GetBitmap(&bi);
 		image->Attach((HBITMAP)bmp.Detach());
 
-		vypocet_histogram(bi.bmHeight, bi.bmWidth, &bmDC);
+		Histogram(bi.bmHeight, bi.bmWidth, &bmDC);
 
 		CPen penr(PS_SOLID, 1, RGB(255, 0, 0));
 		CPen peng(PS_SOLID, 1, RGB(0, 255, 0));
 		CPen penb(PS_SOLID, 1, RGB(0, 0, 255));
 
-		maxr = m_histogramR[0];
-		maxg = m_histogramG[0];
-		maxb = m_histogramB[0];
+		maxr = histogramR[0];
+		maxg = histogramG[0];
+		maxb = histogramB[0];
 
 		for (int i = 0; i <= 255; i++)
 		{
-			if (maxr < m_histogramR[i])
-				maxr = m_histogramR[i];
+			if (maxr < histogramR[i])
+				maxr = histogramR[i];
 
-			if (maxg < m_histogramG[i])
-				maxg = m_histogramG[i];
+			if (maxg < histogramG[i])
+				maxg = histogramG[i];
 
-			if (maxb < m_histogramB[i])
-				maxb = m_histogramB[i];
+			if (maxb < histogramB[i])
+				maxb = histogramB[i];
 		}
 		if ((maxh < maxr) || (maxh < maxg) || (maxh < maxb))
 		{
@@ -285,16 +289,16 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		for (int i = 0; i < 255; i++)
 		{
 			pDC->SelectObject(&penr);
-			pDC->MoveTo(sx*i, rect.Height() - sy * m_histogramR[i]);
-			pDC->LineTo(sx*(i + 1), rect.Height() - sy * m_histogramR[i + 1]);
+			pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
+			pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramR[i + 1]);
 
 			pDC->SelectObject(&peng);
-			pDC->MoveTo(sx*i, rect.Height() - sy * m_histogramG[i]);
-			pDC->LineTo(sx*(i + 1), rect.Height() - sy * m_histogramG[i + 1]);
+			pDC->MoveTo(sx*i, rect.Height() - sy * histogramG[i]);
+			pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramG[i + 1]);
 
 			pDC->SelectObject(&penb);
-			pDC->MoveTo(sx*i, rect.Height() - sy * m_histogramB[i]);
-			pDC->LineTo(sx*(i + 1), rect.Height() - sy * m_histogramB[i + 1]);
+			pDC->MoveTo(sx*i, rect.Height() - sy * histogramB[i]);
+			pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramB[i + 1]);
 		}
 	}
 	else
