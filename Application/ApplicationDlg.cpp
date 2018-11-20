@@ -173,31 +173,6 @@ void CApplicationDlg::Histogram(int h, int w)
 {
 	if (image != nullptr) {
 
-		COLORREF ccolor = 0;
-		int *Red = new int[(h*w)];
-		int *Green = new int[(h*w)];
-		int *Blue = new int[(h*w)];
-
-		for (int i = 0; i < w; i++)
-			for (int j = 0; j < h; j++)
-			{
-				ccolor = image->GetPixel(i, j);
-				Red[(w*j) + i] = (int)GetRValue(ccolor);
-				Green[(w*j) + i] = (int)GetGValue(ccolor);
-				Blue[(w*j) + i] = (int)GetBValue(ccolor);
-			}
-
-		for (int i = 0; i < h*w; i++)
-		{
-			histogramR[Red[i]]++; histogramG[Green[i]]++; histogramB[Blue[i]]++;
-		}
-	}
-}
-
-void CApplicationDlg::Histogram(int h, int w, CDC *bmDC)
-{
-	if (image != nullptr) {
-
 		int *Redcolor = new int[(h*w)];
 		int *Greencolor = new int[(h*w)];
 		int *Bluecolor = new int[(h*w)];
@@ -227,6 +202,17 @@ void CApplicationDlg::Histogram(int h, int w, CDC *bmDC)
 	}
 }
 
+
+void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect, CDC * pDC, CPen *pen, int *pole)
+{
+	for (int i = 0; i < 255; i++)
+	{
+		pDC->SelectObject(pen);
+		pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
+		pDC->LineTo(sx*(i + 1), rect.Height() - sy * pole[i + 1]);
+	}
+}
+
 LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 {
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
@@ -248,7 +234,7 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		bmp.GetBitmap(&bi);
 		image->Attach((HBITMAP)bmp.Detach());
 
-		Histogram(bi.bmHeight, bi.bmWidth, &bmDC);
+		//Histogram(bi.bmHeight, bi.bmWidth, &bmDC);
 
 		CPen penr(PS_SOLID, 1, RGB(255, 0, 0));
 		CPen peng(PS_SOLID, 1, RGB(0, 255, 0));
@@ -282,24 +268,12 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		sx = (float)rect.Width() / 256;
 		sy = (float)rect.Height() / maxh;
 
-		pDC->SelectObject(&penr);
-		pDC->MoveTo(0, 0);
-		pDC->LineTo(sx * 100, sy * 100);
 
-		for (int i = 0; i < 255; i++)
-		{
-			pDC->SelectObject(&penr);
-			pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
-			pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramR[i + 1]);
+		KresliHistogram(sx, sy, rect, pDC, &penr, histogramR);
+		KresliHistogram(sx, sy, rect, pDC, &peng, histogramG);
+		KresliHistogram(sx, sy, rect, pDC, &penb, histogramB);
 
-			pDC->SelectObject(&peng);
-			pDC->MoveTo(sx*i, rect.Height() - sy * histogramG[i]);
-			pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramG[i + 1]);
-
-			pDC->SelectObject(&penb);
-			pDC->MoveTo(sx*i, rect.Height() - sy * histogramB[i]);
-			pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramB[i + 1]);
-		}
+		
 	}
 	else
 	{
@@ -442,6 +416,7 @@ void CApplicationDlg::OnFileOpen()
 			}
 
 			// prekreslenie vsetkych okien
+			Histogram(image->GetHeight(),image->GetWidth());
 			Invalidate();
 		}
 		else {
