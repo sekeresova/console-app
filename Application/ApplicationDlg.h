@@ -59,7 +59,7 @@ protected:
 	CImage *image = nullptr;
 	BITMAP bitmap;
 	float CApplicationDlg::ScaleImage(CRect r, BITMAP bi);
-	void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect, CDC * pDC, CPen *pen, int *pole);
+	void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect, CDC * pDC, CPen *pen, int *pole, COLORREF color);
 	int histogramR[255] = { 0 };
 	int histogramG[255] = { 0 };
 	int histogramB[255] = { 0 };
