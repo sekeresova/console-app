@@ -59,10 +59,13 @@ protected:
 	CImage *image = nullptr;
 	BITMAP bitmap;
 	float CApplicationDlg::ScaleImage(CRect r, BITMAP bi);
-	void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect, CDC * pDC, CPen *pen, int *pole, COLORREF color);
 	int histogramR[255] = { 0 };
 	int histogramG[255] = { 0 };
 	int histogramB[255] = { 0 };
+	bool checkRed = false;
+	bool checkGreen = false;
+	bool checkBlue = false;
+	int tmp_histogram[256] = { 0 };
 
 public:
 	afx_msg void OnFileOpen();
@@ -75,9 +78,20 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	void Histogram(int h, int w);
+	void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect, CDC * pDC, CPen *pen, int *pole, COLORREF color);
+	afx_msg void OnHistogramRed();
+	afx_msg void OnHistogramGreen();
+	afx_msg void OnHistogramBlue();
+	afx_msg void OnUpdateHistogramRed(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateHistogramGreen(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateHistogramBlue(CCmdUI *pCmdUI);
+
 protected:
 	CStaticImage m_ctrlImage;
 	CStaticHistogram m_ctrlHistogram;
 	CPoint m_ptImage;
 	CPoint m_ptHistogram;
+
+public:
+	afx_msg void OnStnClickedImage();
 };
