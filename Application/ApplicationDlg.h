@@ -66,6 +66,11 @@ protected:
 	bool checkGreen = false;
 	bool checkBlue = false;
 	int tmp_histogram[256] = { 0 };
+	int m_hR[256] = { 0 };
+	int m_hG[256] = { 0 };
+	int m_hB[256] = { 0 };
+	int max_hist = 0;
+	int min_hist = 0;
 
 public:
 	afx_msg void OnFileOpen();
@@ -77,8 +82,8 @@ public:
 	afx_msg LRESULT OnDrawHistogram(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	void Histogram(int h, int w);
-	void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect, CDC * pDC, CPen *pen, int *pole, COLORREF color);
+	void Histogram();
+	void KresliHistogram(CRect rect, CDC * pDC, int *pole, COLORREF color, float scale);
 	afx_msg void OnHistogramRed();
 	afx_msg void OnHistogramGreen();
 	afx_msg void OnHistogramBlue();
