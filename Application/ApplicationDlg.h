@@ -71,6 +71,11 @@ protected:
 	int m_hB[256] = { 0 };
 	int max_hist = 0;
 	int min_hist = 0;
+	bool test = false;
+	BYTE *byte_ptr;
+	int pitch;
+	int width, height;
+	
 
 public:
 	afx_msg void OnFileOpen();
@@ -90,6 +95,7 @@ public:
 	afx_msg void OnUpdateHistogramRed(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateHistogramGreen(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateHistogramBlue(CCmdUI *pCmdUI);
+	afx_msg void OnTimer(UINT_PTR id);
 
 protected:
 	CStaticImage m_ctrlImage;

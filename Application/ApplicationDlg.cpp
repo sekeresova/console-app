@@ -93,6 +93,7 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_WM_CLOSE()
 	ON_WM_SIZE()
 	ON_WM_SIZING()
+	ON_WM_TIMER()
 	ON_MESSAGE(WM_DRAW_IMAGE, OnDrawImage)
 	ON_MESSAGE(WM_DRAW_HISTOGRAM, OnDrawHistogram)
 	ON_WM_DESTROY()
@@ -187,8 +188,8 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 void CApplicationDlg::Histogram()
 {
 	int i, j;
-	int width = image->GetWidth();
-	int height = image->GetHeight();
+	width = image->GetWidth();
+	height = image->GetHeight();
 	max_hist = 0;
 
 	for (i = 0; i < 256; i++)
@@ -200,9 +201,9 @@ void CApplicationDlg::Histogram()
 
 	int tmpR, tmpG, tmpB;
 	COLORREF pixelColor = 0;
-	BYTE *byte_ptr;
+	//BYTE *byte_ptr;
 	//sirka bitmapy
-	int pitch; 
+	//int pitch;
 
 	byte_ptr = (BYTE *)(image->GetBits());
 	pitch = image->GetPitch();
@@ -244,6 +245,7 @@ void CApplicationDlg::Histogram()
 			}
 		}
 	}
+	test = true;
 }
 
 
@@ -274,7 +276,7 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
 
 	//DRAW BITMAP
-	if (image != nullptr) {
+	if (image != nullptr && test == true) {
 
 		CBitmap bmp;
 		CDC bmDC;
@@ -475,10 +477,19 @@ HCURSOR CApplicationDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+void CApplicationDlg::OnTimer(UINT_PTR id)
+{
+	if (test == true) {
+		KillTimer(id);
+		Invalidate();
+	}
+}
+
 void CApplicationDlg::OnFileOpen()
 {
 	
-	if (image == nullptr) {
+	/*if (image == nullptr) {
 
 		delete image;
 		image = nullptr;
@@ -486,7 +497,7 @@ void CApplicationDlg::OnFileOpen()
 	else {
 		thread tmp(&CApplicationDlg::Histogram,this);
 		tmp.join();
-	}
+	}*/
 
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
 	
@@ -504,9 +515,10 @@ void CApplicationDlg::OnFileOpen()
 			}
 			else
 			{
-				Histogram();
-				//	std::thread first (Histogram());
-				//	first.join();
+	
+				test = false;
+				thread tmp(&CApplicationDlg::Histogram, this);
+				tmp.join();
 			}
 
 		}
