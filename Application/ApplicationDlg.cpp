@@ -11,6 +11,9 @@
 #include <gdiplus.h>
 #include <iostream>
 #include <thread>
+#include <future>
+#include <chrono>
+#include <iostream>
 using namespace Gdiplus;
 using namespace std;
 
@@ -275,26 +278,18 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 
 		CBitmap bmp;
 		CDC bmDC;
-		BITMAP  bi;
 		CRect rect(lpDI->rcItem);
-		float maxr, maxg, maxb, maxh = 0;
-		float sx, sy;
 
 		float rozdiel = (((float)max_hist - (float)min_hist));
 		float scale = (float)rect.Height() / rozdiel;
-
-		//Histogram(bi.bmHeight, bi.bmWidth, &bmDC);
-
-		sx = (float)rect.Width() / (float)256;
-		sy = (float)rect.Height() / (float)(log10(maxh));
 
 		COLORREF colorR = RGB(255, 0, 0);
 		COLORREF colorG = RGB(0, 255, 0);
 		COLORREF colorB = RGB(0, 0, 255);
 
 		if (checkRed == TRUE) KresliHistogram(rect, pDC, m_hR, colorR, scale);
-		if (checkGreen == TRUE) KresliHistogram(rect, pDC, m_hR, colorR, scale);
-		if (checkBlue == TRUE) KresliHistogram(rect, pDC, m_hR, colorR, scale);
+		if (checkGreen == TRUE) KresliHistogram(rect, pDC, m_hG, colorG, scale);
+		if (checkBlue == TRUE) KresliHistogram(rect, pDC, m_hB, colorB, scale);
 		
 	}
 	else
@@ -482,9 +477,19 @@ HCURSOR CApplicationDlg::OnQueryDragIcon()
 
 void CApplicationDlg::OnFileOpen()
 {
-	//GET FILE NAME AND CREATE GDIPLUS BITMAP
-	// file dialog (.jpg a .png)
+	
+	if (image == nullptr) {
+
+		delete image;
+		image = nullptr;
+	}
+	else {
+		thread tmp(&CApplicationDlg::Histogram,this);
+		tmp.join();
+	}
+
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
+	
 	if (dlg.DoModal() == IDOK) {
 		CString path_name = dlg.GetPathName();
 
