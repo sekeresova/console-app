@@ -14,6 +14,7 @@
 #include <future>
 #include <chrono>
 #include <iostream>
+#include <math.h>
 using namespace Gdiplus;
 using namespace std;
 
@@ -24,7 +25,7 @@ using namespace std;
 #ifndef MIN_SIZE
 #define MIN_SIZE 300
 #endif
-
+#define _USE_MATH_DEFINES
 
 void CStaticImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
@@ -104,6 +105,11 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_RED, OnUpdateHistogramRed)
 	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_GREEN, OnUpdateHistogramGreen)
 	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_BLUE, OnUpdateHistogramBlue)
+	ON_COMMAND(ID_ROTATE_RIGHT, OnRotateRight)
+	ON_COMMAND(ID_ROTATE_LEFT, OnRotateLeft)
+	ON_UPDATE_COMMAND_UI(ID_ROTATE_RIGHT, OnUpdateRotateRight)
+	ON_UPDATE_COMMAND_UI(ID_ROTATE_LEFT, OnUpdateRotateLeft)
+
 
 END_MESSAGE_MAP()
 
@@ -134,6 +140,7 @@ float CApplicationDlg::ScaleImage(CRect r, BITMAP bi)
 	return fact;
 }
 
+
 LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 {
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
@@ -147,20 +154,100 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		CDC bmDC;
 		CBitmap *pOldbmp;
 		BITMAP  bi;
+		CRect r(lpDI->rcItem);
+
+
+		if (checkRight == TRUE) {
+
+			int i, j;
+			int sx, sy, x = 0, y = 0;
+
+			width = image->GetWidth();
+			height = image->GetHeight();
+			sx = width / 2;
+			sy = height / 2;
+			float hodnota_rad = 0;
+			//prevedie stupne do riadianov, 90-lebo otacame vzdy o 90 stupnov
+			hodnota_rad = 90 * (3.16 / 180);
+			int sinf = (int)sin(hodnota_rad);
+			int cosf = (int)cos(hodnota_rad);
+
+			int tmpR, tmpG, tmpB;
+			COLORREF pixelColor;
+
+			for (j = 0; j < height; j++)
+			{
+				for (i = 0; i < width; i++)
+				{
+					pixelColor = image->GetPixel(i, j);
+					tmpR = GetRValue(pixelColor);
+					tmpG = GetGValue(pixelColor);
+					tmpB = GetBValue(pixelColor);
+					pixelColor = RGB(tmpR, tmpG, tmpB);
+					long double a = i - sx;
+					long double b = j - sy;
+					int xx = (int)(+a * cosf - b * sinf + sx);
+					int yy = (int)(+a * sinf + b * cosf + sy);
+
+					image->SetPixel(xx, yy, pixelColor);
+				}
+			}
+			bmp.Attach(image->Detach());
+			image->Attach((HBITMAP)bmp.Detach());
+			return S_OK;
+		}
+	
+		if (checkLeft == TRUE) {
+
+			int i, j;
+			int sx, sy, x = 0, y = 0;
+
+			width = image->GetWidth();
+			height = image->GetHeight();
+			sx = width / 2;
+			sy = height / 2;
+			float hodnota_rad = 0;
+			//prevedie stupne do riadianov, 90-lebo otacame vzdy o 90 stupnov
+			hodnota_rad = 90 * (3.16 / 180);
+			int sinf = (int)sin(hodnota_rad);
+			int cosf = (int)cos(hodnota_rad);
+
+			int tmpR, tmpG, tmpB;
+			COLORREF pixelColor;
+
+			for (j = 0; j < height; j++)
+			{
+				for (i = 0; i < width; i++)
+				{
+					pixelColor = image->GetPixel(i, j);
+					tmpR = GetRValue(pixelColor);
+					tmpG = GetGValue(pixelColor);
+					tmpB = GetBValue(pixelColor);
+					pixelColor = RGB(tmpR, tmpG, tmpB);
+					long double a = i - sx;
+					long double b = j - sy;
+					int xx = (int)(+a * cosf + b * sinf + sx);
+					int yy = (int)(+a * sinf + b * cosf + sy);
+
+					image->SetPixel(xx, yy, pixelColor);
+				}
+			}
+			bmp.Attach(image->Detach());
+			image->Attach((HBITMAP)bmp.Detach());
+			return S_OK;
+		}
+
 
 		//udaje nasho image obrazku 
 		bmp.Attach(image->Detach());
 		//udaje z pdc su skopirovane do bmDC
 		bmDC.CreateCompatibleDC(pDC);
 
-		CRect r(lpDI->rcItem);
-
 		//bmDC je kopia pDC, pDC je to s cim pracujeme
 		//smernik ukazuje na bmDC
 		pOldbmp = bmDC.SelectObject(&bmp);
 		//vlastnosti BITMAP do bmp
 		bmp.GetBitmap(&bi);
-
 
 		//skalovanie
 		//obraz nie je pekne zaostreny, ale farby zlozitejsich obrazkov su uz pekne
@@ -184,6 +271,44 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 	return S_OK;
 }
 
+void CApplicationDlg::OnRotateRight()
+{
+
+	CMenu *pMenu = GetMenu();
+	if (pMenu->GetMenuState(ID_ROTATE_RIGHT, MF_BYCOMMAND | MF_CHECKED))
+	{
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_ROTATE_RIGHT, MF_BYCOMMAND | MF_UNCHECKED);
+		checkRight = false;
+	}
+	else {
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_ROTATE_RIGHT, MF_BYCOMMAND | MF_CHECKED);
+		checkRight = true;
+	}
+	Invalidate();
+
+}
+void CApplicationDlg::OnRotateLeft()
+{
+	CMenu *pMenu = GetMenu();
+	if (pMenu->GetMenuState(ID_ROTATE_LEFT, MF_BYCOMMAND | MF_CHECKED))
+	{
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_ROTATE_LEFT, MF_BYCOMMAND | MF_UNCHECKED);
+		checkLeft = false;
+	}
+	else {
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_ROTATE_LEFT, MF_BYCOMMAND | MF_CHECKED);
+		checkLeft = true;
+	}
+	Invalidate();
+}
+
+void CApplicationDlg::OnUpdateRotateRight(CCmdUI *pCmdUI) {
+	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnUpdateRotateLeft(CCmdUI *pCmdUI) {
+	pCmdUI->Enable(TRUE);
+}
 
 void CApplicationDlg::Histogram()
 {
@@ -488,17 +613,6 @@ void CApplicationDlg::OnTimer(UINT_PTR id)
 
 void CApplicationDlg::OnFileOpen()
 {
-	
-	/*if (image == nullptr) {
-
-		delete image;
-		image = nullptr;
-	}
-	else {
-		thread tmp(&CApplicationDlg::Histogram,this);
-		tmp.join();
-	}*/
-
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
 	
 	if (dlg.DoModal() == IDOK) {

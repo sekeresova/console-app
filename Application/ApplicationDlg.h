@@ -75,6 +75,8 @@ protected:
 	BYTE *byte_ptr;
 	int pitch;
 	int width, height;
+	bool checkRight = false;
+	bool checkLeft = false;
 	
 
 public:
@@ -96,6 +98,10 @@ public:
 	afx_msg void OnUpdateHistogramGreen(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateHistogramBlue(CCmdUI *pCmdUI);
 	afx_msg void OnTimer(UINT_PTR id);
+	afx_msg void OnRotateRight();
+	afx_msg void OnRotateLeft();
+	afx_msg void OnUpdateRotateRight(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateRotateLeft(CCmdUI *pCmdUI);
 
 protected:
 	CStaticImage m_ctrlImage;
